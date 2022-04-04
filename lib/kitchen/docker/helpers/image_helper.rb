@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen'
-require 'kitchen/configurable'
-require_relative 'cli_helper'
-require_relative 'container_helper'
+require "kitchen"
+require "kitchen/configurable"
+require_relative "cli_helper"
+require_relative "container_helper"
 
 module Kitchen
   module Docker
@@ -26,8 +26,8 @@ module Kitchen
 
         def parse_image_id(output)
           output.each_line do |line|
-            if line =~ /writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i
-              img_id = line[/writing image (sha256:[[:xdigit:]]{64})(?: \d*\.\ds)? done/i,1]
+            if line =~ /writing image sha256:[[:xdigit:]]{64} done/i
+              img_id = line[/writing image (sha256:[[:xdigit:]]{64}) done/i, 1]
               return img_id
             end
             if line =~ /image id|build successful|successfully built/i
@@ -35,7 +35,7 @@ module Kitchen
               return img_id
             end
           end
-          raise ActionFailed, 'Could not parse Docker build output for image ID'
+          raise ActionFailed, "Could not parse Docker build output for image ID"
         end
 
         def remove_image(state)
@@ -44,21 +44,21 @@ module Kitchen
         end
 
         def build_image(state, dockerfile)
-          cmd = 'build'
-          cmd << ' --no-cache' unless config[:use_cache]
+          cmd = "build"
+          cmd << " --no-cache" unless config[:use_cache]
           cmd << " --platform=#{config[:docker_platform]}" if config[:docker_platform]
           extra_build_options = config_to_options(config[:build_options])
           cmd << " #{extra_build_options}" unless extra_build_options.empty?
           dockerfile_contents = dockerfile
-          file = Tempfile.new('Dockerfile-kitchen', Dir.pwd)
+          file = Tempfile.new("Dockerfile-kitchen", Dir.pwd)
           cmd << " -f #{Shellwords.escape(dockerfile_path(file))}" if config[:build_context]
-          build_context = config[:build_context] ? '.' : '-'
+          build_context = config[:build_context] ? "." : "-"
           output = begin
                      file.write(dockerfile)
                      file.close
                      docker_command("#{cmd} #{build_context}",
                                     input: dockerfile_contents,
-                                    environment: { BUILDKIT_PROGRESS: 'plain' })
+                                    environment: { BUILDKIT_PROGRESS: "plain" })
                    ensure
                      file.close unless file.closed?
                      file.unlink
