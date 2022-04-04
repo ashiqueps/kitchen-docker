@@ -36,9 +36,9 @@ module Kitchen
             opensuse_platform
           when "rhel", "centos", "oraclelinux", "amazonlinux", "almalinux", "rockylinux"
             rhel_platform
-          when 'centosstream'
+          when "centosstream"
             centosstream_platform
-          when 'photon'
+          when "photon"
             photonos_platform
           else
             raise ActionFailed, "Unknown platform '#{config[:platform]}'"
